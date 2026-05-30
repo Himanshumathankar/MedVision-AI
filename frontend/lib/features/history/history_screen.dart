@@ -13,28 +13,47 @@ class HistoryScreen extends ConsumerWidget {
     return AnimatedGradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(title: const Text('History'), backgroundColor: Colors.transparent),
+        appBar: AppBar(
+          title: const Text('History'),
+          backgroundColor: Colors.transparent,
+        ),
         body: Padding(
           padding: const EdgeInsets.all(24),
           child: GlassContainer(
             child: history.when(
               data: (items) => ListView.separated(
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const Divider(color: Colors.white24),
+                separatorBuilder: (_, _) =>
+                    const Divider(color: Colors.white24),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   return ListTile(
-                    title: Text(item.label, style: const TextStyle(color: Colors.white)),
+                    title: Text(
+                      item.label,
+                      style: const TextStyle(color: Colors.white),
+                    ),
                     subtitle: Text(
-                      '${(item.confidence * 100).toStringAsFixed(1)}% • ${item.createdAt.toLocal()}'.split('.').first,
+                      '${(item.confidence * 100).toStringAsFixed(1)}% • ${item.createdAt.toLocal()}'
+                          .split('.')
+                          .first,
                       style: const TextStyle(color: Colors.white70),
                     ),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.white70),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.white70,
+                    ),
                   );
                 },
               ),
-              loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-              error: (error, _) => Center(child: Text(error.toString(), style: const TextStyle(color: Colors.redAccent))),
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+              error: (error, _) => Center(
+                child: Text(
+                  error.toString(),
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+              ),
             ),
           ),
         ),

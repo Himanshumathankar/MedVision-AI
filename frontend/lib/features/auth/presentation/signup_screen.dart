@@ -35,9 +35,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           }
         },
         error: (error, _) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.toString())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
         },
       );
     });
@@ -53,7 +53,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Create Account', style: TextStyle(fontSize: 26, color: Colors.white)),
+                  const Text(
+                    'Create Account',
+                    style: TextStyle(fontSize: 26, color: Colors.white),
+                  ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _nameController,
@@ -77,15 +80,32 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ElevatedButton(
                     onPressed: authState.isLoading
                         ? null
-                        : () => ref.read(authControllerProvider.notifier).signUpEmail(
-                              _emailController.text.trim(),
-                              _passwordController.text.trim(),
-                            ),
-                    child: authState.isLoading ? const CircularProgressIndicator() : const Text('Sign Up'),
+                        : () => ref
+                              .read(authControllerProvider.notifier)
+                              .signUpEmail(
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                              ),
+                    child: authState.isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Sign Up'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: authState.isLoading
+                        ? null
+                        : () => ref
+                              .read(authControllerProvider.notifier)
+                              .signInGoogle(),
+                    icon: const Icon(Icons.g_mobiledata),
+                    label: const Text('Sign up with Google'),
                   ),
                   TextButton(
                     onPressed: () => context.go('/login'),
-                    child: const Text('Already have an account?', style: TextStyle(color: Colors.white70)),
+                    child: const Text(
+                      'Already have an account?',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                   ),
                 ],
               ),

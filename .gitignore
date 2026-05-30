@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+backend/.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment files and secrets
+.env
+.env.*
+*.pem
+*.key
+*service-account*.json
+medvision-d2394-firebase-adminsdk-fbsvc-2e30284427.json
+
+# Artifacts and data
+backend/artifacts/
+backend/artifacts/**
+backend/artifacts/uploads/
+backend/artifacts/uploads/**
+backend/uploads/
+dataset/
+
+# Build outputs
+build/
+frontend/build/
+backend/build/
+
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE/editor
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Firebase files in repo root
+Firebase_files/
+google-services.json

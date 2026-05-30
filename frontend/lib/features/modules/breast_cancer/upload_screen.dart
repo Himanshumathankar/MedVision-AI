@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +31,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
       _previewBytes = file.bytes;
       _filename = file.name;
     });
-    ref.read(predictionControllerProvider.notifier).setImage(file.bytes!, file.name);
+    ref
+        .read(predictionControllerProvider.notifier)
+        .setImage(file.bytes!, file.name);
   }
 
   Future<void> _captureFromCamera() async {
@@ -68,26 +69,43 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 children: [
                   const Icon(Icons.cloud_upload, size: 64, color: Colors.white),
                   const SizedBox(height: 12),
-                  const Text('Upload Mammogram', style: TextStyle(fontSize: 22, color: Colors.white)),
+                  const Text(
+                    'Upload Mammogram',
+                    style: TextStyle(fontSize: 22, color: Colors.white),
+                  ),
                   const SizedBox(height: 16),
-                  const Text('Drag & drop or select an image to analyze.', style: TextStyle(color: Colors.white70)),
+                  const Text(
+                    'Drag & drop or select an image to analyze.',
+                    style: TextStyle(color: Colors.white70),
+                  ),
                   const SizedBox(height: 16),
                   if (_previewBytes != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.memory(_previewBytes!, height: 160, fit: BoxFit.cover),
+                      child: Image.memory(
+                        _previewBytes!,
+                        height: 160,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   if (_filename != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(_filename!, style: const TextStyle(color: Colors.white70)),
+                      child: Text(
+                        _filename!,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
                     ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
-                    onPressed: predictionState.isUploading || predictionState.isPredicting
+                    onPressed:
+                        predictionState.isUploading ||
+                            predictionState.isPredicting
                         ? null
                         : () async {
-                            await ref.read(predictionControllerProvider.notifier).uploadAndPredict();
+                            await ref
+                                .read(predictionControllerProvider.notifier)
+                                .uploadAndPredict();
                             if (context.mounted) {
                               context.go('/breast/processing');
                             }
@@ -116,7 +134,10 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   if (predictionState.error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
-                      child: Text(predictionState.error!, style: const TextStyle(color: Colors.redAccent)),
+                      child: Text(
+                        predictionState.error!,
+                        style: const TextStyle(color: Colors.redAccent),
+                      ),
                     ),
                 ],
               ),

@@ -37,7 +37,11 @@ def preprocess_image(image_url: Optional[str], image_base64: Optional[str]) -> O
     if image_base64:
         img_path = _decode_base64_image(image_base64)
     elif image_url:
-        img_path = _download_image(image_url)
+        if os.path.exists(image_url):
+            img_path = image_url
+        else:
+            local_path = os.path.abspath(image_url)
+            img_path = local_path if os.path.exists(local_path) else _download_image(image_url)
     else:
         return None
 

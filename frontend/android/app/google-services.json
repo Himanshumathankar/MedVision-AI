@@ -12,7 +12,20 @@
           "package_name": "com.medvision.ai"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "953948179840-ku18g6b1fhf0kp5ee90jc2pj3lpud7j2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.medvision.ai",
+            "certificate_hash": "f78a5e02868b75a87a00a45e5e737bd5986c651c"
+          }
+        },
+        {
+          "client_id": "953948179840-jkfhm3hd93u1117jjkm5jscqurhoe4j9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB27i8TZ3Nm-Q2WDCKEov-gUhnXTUeoIXA"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "953948179840-jkfhm3hd93u1117jjkm5jscqurhoe4j9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "953948179840-gm9r307scvish0vjl3aibi4f2vab9aho.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.medvision.ai"
+              }
+            }
+          ]
         }
       }
     }

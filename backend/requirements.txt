@@ -18,7 +18,7 @@ redis==5.0.7
 cloudinary==1.40.0
 reportlab==4.2.2
 shap==0.44.1
-matplotlib==3.9.1
+matplotlib==3.9.1.post1
 albumentations==1.4.10
 pywavelets==1.6.0
 firebase-admin==6.5.0

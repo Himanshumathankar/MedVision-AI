@@ -1,7 +1,9 @@
 import base64
+import logging
 import os
-from typing import Tuple
+from typing import List, Tuple
 import numpy as np
+import tensorflow as tf
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -15,8 +17,21 @@ from utils.file_paths import ensure_artifacts_dir
 
 class Trainer:
     def __init__(self) -> None:
+        self._configure_gpu()
         self.vgg = VGG19(weights="imagenet", include_top=False, pooling="avg")
         self.densenet = DenseNet121(weights="imagenet", include_top=False, pooling="avg")
+
+    def _configure_gpu(self) -> None:
+        gpus = tf.config.list_physical_devices("GPU")
+        if gpus:
+            logging.info("Using GPU devices: %s", ", ".join(g.name for g in gpus))
+        else:
+            logging.info("No GPU detected, using CPU")
+        for gpu in gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except Exception:
+                pass
 
     def _extract_features(self, img_path: str) -> np.ndarray:
         img = keras_image.load_img(img_path, target_size=(224, 224), color_mode="rgb")
@@ -26,21 +41,23 @@ class Trainer:
         dense_feat = self.densenet.predict(dense_pre(arr), verbose=0).flatten()
         return np.concatenate([vgg_feat, dense_feat])
 
-    def _load_images(self, root: str) -> Tuple[np.ndarray, np.ndarray]:
+    def _load_images(self, roots: List[str]) -> Tuple[np.ndarray, np.ndarray]:
         features = []
         labels = []
-        for label_name, label_value in [("Non-Cancer", 0), ("Cancer", 1)]:
-            folder = os.path.join(root, label_name)
-            for fname in os.listdir(folder):
-                if not fname.lower().endswith((".png", ".jpg", ".jpeg")):
-                    continue
-                path = os.path.join(folder, fname)
-                preprocessed = preprocess_image(None, self._to_base64(path))
-                if not preprocessed:
-                    continue
-                feat = self._extract_features(preprocessed)
-                features.append(feat)
-                labels.append(label_value)
+        for root in roots:
+            for label_name, label_value in [("Non-Cancer", 0), ("Cancer", 1)]:
+                folder = os.path.join(root, label_name)
+                for fname in os.listdir(folder):
+                    if not fname.lower().endswith((".png", ".jpg", ".jpeg")):
+                        continue
+                    path = os.path.join(folder, fname)
+                    preprocessed = preprocess_image(None, self._to_base64(path))
+                    if not preprocessed:
+                        continue
+                    feat = self._extract_features(preprocessed)
+                    features.append(feat)
+                    labels.append(label_value)
+                logging.info("Loaded %d samples from %d dataset roots", len(features), len(roots))
         return np.array(features), np.array(labels)
 
     def _to_base64(self, path: str) -> str:
@@ -48,8 +65,8 @@ class Trainer:
             encoded = base64.b64encode(f.read()).decode("utf-8")
         return "data:image/png;base64," + encoded
 
-    def train(self, dataset_dir: str) -> None:
-        features, labels = self._load_images(dataset_dir)
+    def train(self, dataset_dirs: List[str]) -> None:
+        features, labels = self._load_images(dataset_dirs)
         scaler = StandardScaler()
         features_scaled = scaler.fit_transform(features)
         pca = PCA(n_components=min(100, features_scaled.shape[1]))
