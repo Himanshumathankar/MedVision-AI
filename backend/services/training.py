@@ -1,6 +1,6 @@
-import base64
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple
 import numpy as np
 import tensorflow as tf
@@ -16,7 +16,8 @@ from utils.file_paths import ensure_artifacts_dir
 
 
 class Trainer:
-    def __init__(self) -> None:
+    def __init__(self, batch_size: int = 16) -> None:
+        self.batch_size = batch_size
         self._configure_gpu()
         self.vgg = VGG19(weights="imagenet", include_top=False, pooling="avg")
         self.densenet = DenseNet121(weights="imagenet", include_top=False, pooling="avg")
@@ -25,6 +26,11 @@ class Trainer:
         gpus = tf.config.list_physical_devices("GPU")
         if gpus:
             logging.info("Using GPU devices: %s", ", ".join(g.name for g in gpus))
+            try:
+                tf.keras.mixed_precision.set_global_policy("mixed_float16")
+                logging.info("Mixed precision enabled")
+            except Exception:
+                logging.exception("Failed to enable mixed precision")
         else:
             logging.info("No GPU detected, using CPU")
         for gpu in gpus:
@@ -33,37 +39,54 @@ class Trainer:
             except Exception:
                 pass
 
-    def _extract_features(self, img_path: str) -> np.ndarray:
-        img = keras_image.load_img(img_path, target_size=(224, 224), color_mode="rgb")
-        arr = keras_image.img_to_array(img)
-        arr = np.expand_dims(arr, axis=0)
-        vgg_feat = self.vgg.predict(vgg_pre(arr), verbose=0).flatten()
-        dense_feat = self.densenet.predict(dense_pre(arr), verbose=0).flatten()
-        return np.concatenate([vgg_feat, dense_feat])
+    def _extract_features_batch(self, img_paths: List[str]) -> np.ndarray:
+        images = []
+        for img_path in img_paths:
+            img = keras_image.load_img(img_path, target_size=(224, 224), color_mode="rgb")
+            images.append(keras_image.img_to_array(img))
+        arr = np.stack(images, axis=0).astype(np.float32)
+        vgg_feat = self.vgg.predict(vgg_pre(arr), verbose=0)
+        dense_feat = self.densenet.predict(dense_pre(arr), verbose=0)
+        return np.concatenate([vgg_feat, dense_feat], axis=1)
 
     def _load_images(self, roots: List[str]) -> Tuple[np.ndarray, np.ndarray]:
-        features = []
-        labels = []
+        samples = []
         for root in roots:
             for label_name, label_value in [("Non-Cancer", 0), ("Cancer", 1)]:
                 folder = os.path.join(root, label_name)
                 for fname in os.listdir(folder):
                     if not fname.lower().endswith((".png", ".jpg", ".jpeg")):
                         continue
-                    path = os.path.join(folder, fname)
-                    preprocessed = preprocess_image(None, self._to_base64(path))
-                    if not preprocessed:
-                        continue
-                    feat = self._extract_features(preprocessed)
-                    features.append(feat)
-                    labels.append(label_value)
-                logging.info("Loaded %d samples from %d dataset roots", len(features), len(roots))
-        return np.array(features), np.array(labels)
+                    samples.append((os.path.join(folder, fname), label_value))
 
-    def _to_base64(self, path: str) -> str:
-        with open(path, "rb") as f:
-            encoded = base64.b64encode(f.read()).decode("utf-8")
-        return "data:image/png;base64," + encoded
+        def _preprocess(entry: tuple[str, int]) -> tuple[str, int] | None:
+            path, label = entry
+            preprocessed = preprocess_image(path, None)
+            if not preprocessed:
+                return None
+            return preprocessed, label
+
+        processed = []
+        with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
+            for result in executor.map(_preprocess, samples):
+                if result:
+                    processed.append(result)
+
+        if not processed:
+            return np.array([]), np.array([])
+
+        features = []
+        labels = []
+        for i in range(0, len(processed), self.batch_size):
+            batch = processed[i : i + self.batch_size]
+            batch_paths = [item[0] for item in batch]
+            batch_labels = [item[1] for item in batch]
+            feats = self._extract_features_batch(batch_paths)
+            features.append(feats)
+            labels.extend(batch_labels)
+
+        logging.info("Loaded %d samples from %d dataset roots", len(labels), len(roots))
+        return np.vstack(features), np.array(labels)
 
     def train(self, dataset_dirs: List[str]) -> None:
         features, labels = self._load_images(dataset_dirs)
