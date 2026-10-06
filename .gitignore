@@ -20,12 +20,7 @@ backend/.venv/
 *service-account*.json
 medvision-d2394-firebase-adminsdk-fbsvc-2e30284427.json
 
-# Artifacts and data
-backend/artifacts/
-backend/artifacts/**
-backend/artifacts/uploads/
-backend/artifacts/uploads/**
-backend/uploads/
+#dataset
 dataset/
 
 # Build outputs
