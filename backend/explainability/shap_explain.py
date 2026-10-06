@@ -21,8 +21,15 @@ class ShapExplainer:
         features = np.array(features).reshape(1, -1)
         if self.background.shape[1] != features.shape[1]:
             self.background = np.zeros((1, features.shape[1]))
-        explainer = shap.KernelExplainer(self._predict, self.background)
-        values = explainer.shap_values(features, nsamples=50)
-        if isinstance(values, list):
-            return values[1].flatten().tolist() if len(values) > 1 else values[0].flatten().tolist()
-        return values.flatten().tolist()
+        try:
+            explainer = shap.KernelExplainer(self._predict, self.background)
+            values = explainer.shap_values(
+                features,
+                nsamples=100,
+                l1_reg="num_features(20)",
+            )
+            if isinstance(values, list):
+                return values[1].flatten().tolist() if len(values) > 1 else values[0].flatten().tolist()
+            return values.flatten().tolist()
+        except Exception:
+            return []

@@ -156,6 +156,14 @@ Set-Location frontend
 flutter run -d android
 ```
 
+If you are using a physical Android device and the backend runs on your PC, you can use ADB port reverse so the app can reach http://localhost:8000:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8000 tcp:8000
+```
+
+What `adb reverse` does: it forwards traffic from the Android device back to your computer on the same port, so requests to http://localhost:8000 on the device reach your local backend.
+
 #### iOS (simulator, macOS only)
 
 ```bash
@@ -179,6 +187,77 @@ The Flutter app uses a hardcoded base URL. Update it to match your backend host 
   - Android emulator: http://10.0.2.2:8000
   - iOS simulator: http://localhost:8000
   - Physical device: http://<your-lan-ip>:8000
+
+## Build and Release (All Platforms)
+
+Run these from the frontend folder:
+
+### Android
+
+Debug APK:
+
+```powershell
+Set-Location frontend
+flutter build apk --debug
+```
+
+Release APK (requires signing config):
+
+```powershell
+Set-Location frontend
+flutter build apk --release
+```
+
+Release AAB (Play Store):
+
+```powershell
+Set-Location frontend
+flutter build appbundle --release
+```
+
+### iOS (macOS only)
+
+Debug build:
+
+```bash
+cd frontend
+flutter build ios --debug
+```
+
+Release build (signing required):
+
+```bash
+cd frontend
+flutter build ios --release
+```
+
+### Web
+
+```bash
+cd frontend
+flutter build web
+```
+
+### Windows
+
+```powershell
+Set-Location frontend
+flutter build windows
+```
+
+### macOS (macOS only)
+
+```bash
+cd frontend
+flutter build macos
+```
+
+### Linux
+
+```bash
+cd frontend
+flutter build linux
+```
 
 ## ML Artifacts and Training
 

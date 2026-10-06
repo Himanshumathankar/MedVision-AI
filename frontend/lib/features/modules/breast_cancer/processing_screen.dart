@@ -20,6 +20,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
     'Preparing diagnostic report...',
   ];
   int _index = 0;
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -43,6 +44,14 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
       }
     });
     final state = ref.watch(predictionControllerProvider);
+    if (!_navigated && state.result != null) {
+      _navigated = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.go('/breast/results');
+        }
+      });
+    }
     return AnimatedGradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -56,16 +65,24 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
                 children: [
                   const CircularProgressIndicator(color: Colors.white),
                   const SizedBox(height: 16),
-                  Text(_steps[_index], style: const TextStyle(color: Colors.white)),
+                  Text(
+                    _steps[_index],
+                    style: const TextStyle(color: Colors.white),
+                  ),
                   const SizedBox(height: 12),
                   Text(
-                    state.isUploading || state.isPredicting ? 'Processing...' : 'Waiting for analysis',
+                    state.isUploading || state.isPredicting
+                        ? 'Processing...'
+                        : 'Waiting for analysis',
                     style: const TextStyle(color: Colors.white70),
                   ),
                   if (state.error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(state.error!, style: const TextStyle(color: Colors.redAccent)),
+                      child: Text(
+                        state.error!,
+                        style: const TextStyle(color: Colors.redAccent),
+                      ),
                     ),
                 ],
               ),
